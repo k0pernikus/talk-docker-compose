@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+      .image-50 img {
+          width: 50%;
+      }
+
+      .image-75 img {
+          width: 75%;
+      }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+# docker-compose
+
+1. Common docker problems
+2. docker-compose to the rescue
+2.1 installation
+2.2 commands
+3. docker-compose.yml {v1, v2}
+4. pitfalls
+---
+# Common docker Problems
+## Multi Container apps are a hassle
+* build images from Dockerfiles
+* pull images from the hub or private registry
+* start and stopping of containers
+---
+# Let's install selenium grid using docker:
+
+## Pull images
+```bash
+$ docker pull selenium/hub && docker pull selenium/node-firefox && docker pull selenium/node-chrome
+Using default tag: latest
+latest: Pulling from selenium/hub
+dde80f7d7068: Already exists
+d61acf11302c: Pull complete
+Digest: sha256:fc5015b58e11e880ffde69a44677c78b202269011a0c547553c41654648d0197
+Status: Downloaded newer image for selenium/hub:latest
+```
+---
+# Let's install selenium grid using docker:
+
+## Start the hub:
+docker run -d -P --name selenium-hub selenium/hub
+
+## Link some nodes:
+```bash
+docker run -d --link selenium-hub:hub selenium/node-firefox
+docker run -d --link selenium-hub:hub selenium/node-chrome
+```
+---
+# Let's install selenium grid using docker
+It works \o/
+
+.image-75[![Default-aligned image](img/grid_via_docker.png)]
+
+--
+
+but:
+
+* how to restart?
+* how to
+* one has to do all the steps again (╯°□°）╯︵ ┻━┻
+* or write a script
+
+# There has to be a better way!
+
+---
+# Enter docker-compose
+
+Docker Compose is for
+* defining
+* running
+
+multi-container Docker applications
+
+---
+
+# Installation
+
+## OS
+Available for:
+* [Ubuntu](https://docs.docker.com/engine/installation/windows/)
+* [MacOs](https://docs.docker.com/engine/installation/mac/)
+* even [Windows](https://docs.docker.com/engine/installation/windows/)
+
+## Requirements
+
+You need docker. Make sure it's a current version:
+```bash
+$ docker -v
+Docker version 1.11.2, build b9f10c9
+```
+---
+# Installation
+
+## Let's fetch it
+
+```bash
+$ curl -L https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+$ chmod +x /usr/local/bin/docker-compose
+```
+
+## Test run
+```bash
+$ docker-compose -v
+docker-compose version 1.7.1, build 0a9ab35
+```
+---
+# docker-compose commands
+
+```
+$ docker-compose
+Commands:
+  build              Build or rebuild services
+  config             Validate and view the compose file
+  create             Create services
+  down               Stop and remove containers, networks, images, and volumes
+  events             Receive real time events from containers
+  exec               Execute a command in a running container
+  help               Get help on a command
+  kill               Kill containers
+  logs               View output from containers
+  pause              Pause services
+  port               Print the public port for a port binding
+  ps                 List containers
+  pull               Pulls service images
+  restart            Restart services
+  rm                 Remove stopped containers
+  run                Run a one-off command
+  scale              Set number of containers for a service
+  start              Start services
+  stop               Stop services
+  unpause            Unpause services
+  up                 Create and start containers
+  version            Show the Docker-Compose version information
+```
+
+---
+# Commands you will need:
+
+```bash
+build              Build or rebuild services
+up                 Create and start containers
+stop               Stop services
+```
+
+---
+
+# Let's run it:
+
+```bash
+$ docker-compose up
+ERROR:
+        Can't find a suitable configuration file in this directory or any
+        parent. Are you in the right directory?
+
+        Supported filenames: docker-compose.yml, docker-compose.yaml
+```
+
+---
+#docker-compose.yml
+
+* one file to define entire architecture
+* yet two version!
+
+---
+# docker-compose.yml
+
+## Selenium grid v1:
+
+```yml
+hub:
+    image: selenium/hub.image-50 img {
+  width: 50%;
+}
+firefox:
+    image: selenium/node-firefox
+    links:
+        - hub
+chrome:
+    image: selenium/node-chrome
+    links:
+        - hub
+```
+
+```bash
+$ docker-compose up -d
+docker-compose -f grid.yml up -d
+Creating helloworld_hub_1
+Creating helloworld_chrome_1
+Creating helloworld_firefox_1
+```
+---
+# Selenium grid version2:
+
+```yml
+version: '2'
+
+services:
+    hub:
+        image: selenium/hub
+        ports:
+            - 4444:4444
+    firefox:
+        image: selenium/node-firefox
+        links:
+            - hub
+    chrome:
+        image: selenium/node-chrome
+        links:
+            - hub
+```
+
+```bash
+$ docker-compose up -d
+docker-compose -f grid.yml up -d
+Creating helloworld_hub_1
+Creating helloworld_chrome_1
+Creating helloworld_firefox_1
+```
+---
+
+# Main difference between versions?
+
+## syntax
+* all services are defined under service key
+* new volumes key
+
+## networking
+* on v2 every container can communciate with each other
+* no linking necessary
+
+## Which are we going to use?
+
+* Let's use v2, right!?
+
+---
+
+# docker-compose and rancher
+* docker-compse v2 support in progress for rancher
+* planned for 1.2.0 milestone planned for October 2016
+* there's an [issue on github](https://github.com/rancher/rancher/issues/3973)
+
+So for rancher we currently need to use v1.
+
+.image-75[![rancher](img/rancher_issue.png)]
+
+---
+# pittfalls
+### Extending docker-compose files
+* linked images are not extendable
+* hence: duplication necessary
+* one can also run multiple docker-compose.yml
+
+### Pulling the latest tag
+* if images will not be refeteched
+* regulary `docker-compose pull`
+---
+# Pittfalls
+### start vs up vs build
+* recreating image is not rebuilding input
+** most often up is enough
+** sometimes build is necessary, hence if in doubt `docker-compose build`
+
+### Disk space
+* images eat space as if it was candy!
+* [docker-clean](https://github.com/ZZROTDesign/docker-clean) is your friend
+
+```
+docker-clean
+Cleaning images...
+Images cleaned: 5
+You've cleared approximately MB: 3598 or GB: 3 of space!
+No dangling volumes!
+Removing empty networks...
+Networks removed: 2
+```
+---
+# Live demo
+---
+# Thank you!
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
