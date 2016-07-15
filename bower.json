@@ -1,0 +1,13 @@
+{
+  "name": "talk-docker-compose",
+  "homepage": "https://github.com/k0pernikus/talk-docker-compose",
+  "authors": [
+    "Philipp Kretzschmar <philipp.kretzschmar@dreamlines.de>"
+  ],
+  "description": "#slides for docker-compose talk",
+  "main": "index.html",
+  "private": true,
+  "dependencies": {
+    "remark": "^0.13.0"
+  }
+}
