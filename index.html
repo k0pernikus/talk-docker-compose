@@ -72,16 +72,19 @@ It works \o/
 
 .image-75[![Default-aligned image](img/grid_via_docker.png)]
 
---
+---
 
-but:
+# Problems
 
 * how to restart?
 * how to
-* one has to do all the steps again (╯°□°）╯︵ ┻━┻
+* one has to do all the steps again
+
+(╯°□°）╯︵ ┻━┻
+
 * or write a script
 
-# There has to be a better way!
+### There has to be a better way!
 
 ---
 # Enter docker-compose
@@ -219,7 +222,9 @@ services:
     hub:
         image: selenium/hub
         ports:
-            - 4444:4444
+            - 4444:4444.image-50 img {
+  width: 50%;
+}
     firefox:
         image: selenium/node-firefox
         links:
@@ -300,7 +305,7 @@ Networks removed: 2
 # Thank you!
 
     </textarea>
-    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    <script src="bower_components/remark/out/remark.min.js">
     </script>
     <script>
       var slideshow = remark.create();
