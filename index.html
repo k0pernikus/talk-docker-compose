@@ -32,20 +32,19 @@
 
 1. Common docker problems
 2. docker-compose to the rescue
-2.1 installation
-2.2 commands
-3. docker-compose.yml {v1, v2}
-4. pitfalls
+3. pitfalls
+4. live demo
 ---
-# Common docker Problems
+# 1. Common docker Problems
 ## Multi Container apps are a hassle
 * build images from Dockerfiles
 * pull images from the hub or private registry
 * start and stopping of containers
 ---
-# Let's install selenium grid using docker:
+# 1. Common docker Problems
+## Let's install selenium grid using docker:
 
-## Pull images
+### Pull images
 ```bash
 $ docker pull selenium/hub && docker pull selenium/node-firefox && docker pull selenium/node-chrome
 Using default tag: latest
@@ -56,38 +55,42 @@ Digest: sha256:fc5015b58e11e880ffde69a44677c78b202269011a0c547553c41654648d0197
 Status: Downloaded newer image for selenium/hub:latest
 ```
 ---
-# Let's install selenium grid using docker:
+# 1. Common docker Problems
+## Let's install selenium grid using docker:
 
-## Start the hub:
+### Start the hub:
 docker run -d -P --name selenium-hub selenium/hub
 
-## Link some nodes:
+### Link some nodes:
 ```bash
 docker run -d --link selenium-hub:hub selenium/node-firefox
 docker run -d --link selenium-hub:hub selenium/node-chrome
 ```
 ---
-# Let's install selenium grid using docker
+# 1. Common docker Problems
+## Let's install selenium grid using docker
 It works \o/
 
 .image-75[![Default-aligned image](img/grid_via_docker.png)]
 
 ---
+# 1. Common docker Problems
 
-# Problems
+* how to start and  stop only certain services?
+* how to restart entire stack?
+* one has to do all the steps again!
 
-* how to restart?
-* how to
-* one has to do all the steps again
 
-(╯°□°）╯︵ ┻━┻
+        (╯°□°）╯︵ ┻━┻
+
 
 * or write a script
 
 ### There has to be a better way!
 
 ---
-# Enter docker-compose
+# 2. docker-compose for the rescue
+## Purpose
 
 Docker Compose is for
 * defining
@@ -96,40 +99,37 @@ Docker Compose is for
 multi-container Docker applications
 
 ---
-
-# Installation
-
-## OS
+# 2. docker-compose for the rescue
+## Installation
+### OS
 Available for:
 * [Ubuntu](https://docs.docker.com/engine/installation/windows/)
 * [MacOs](https://docs.docker.com/engine/installation/mac/)
 * even [Windows](https://docs.docker.com/engine/installation/windows/)
 
-## Requirements
-
+### Requirements
 You need docker. Make sure it's a current version:
 ```bash
 $ docker -v
 Docker version 1.11.2, build b9f10c9
 ```
 ---
-# Installation
-
-## Let's fetch it
-
+# 2. docker-compose for the rescue
+## Installation
+### Let's fetch it
 ```bash
 $ curl -L https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
 $ chmod +x /usr/local/bin/docker-compose
 ```
 
-## Test run
+### Test run
 ```bash
 $ docker-compose -v
 docker-compose version 1.7.1, build 0a9ab35
 ```
 ---
-# docker-compose commands
-
+# 2. docker-compose for the rescue
+## docker-compose commands
 ```
 $ docker-compose
 Commands:
@@ -158,18 +158,17 @@ Commands:
 ```
 
 ---
-# Commands you will need:
+# 2. docker-compose for the rescue
+## Commands you will need:
 
 ```bash
-build              Build or rebuild services
 up                 Create and start containers
 stop               Stop services
+build              Build or rebuild services
 ```
-
 ---
-
-# Let's run it:
-
+# 2. docker-compose for the rescue
+## Let's run it:
 ```bash
 $ docker-compose up
 ERROR:
@@ -180,16 +179,15 @@ ERROR:
 ```
 
 ---
-#docker-compose.yml
-
+# 2. docker-compose for the rescue
+##docker-compose.yml
 * one file to define entire architecture
 * yet two version!
 
 ---
-# docker-compose.yml
-
-## Selenium grid v1:
-
+# 2. docker-compose for the rescue
+## docker-compose.yml v1
+### Build the selenium grid
 ```yml
 hub:
     image: selenium/hub
@@ -203,7 +201,7 @@ chrome:
     links:
         - hub
 ```
-
+---
 ```bash
 $ docker-compose up -d
 docker-compose -f grid.yml up -d
@@ -212,8 +210,8 @@ Creating helloworld_chrome_1
 Creating helloworld_firefox_1
 ```
 ---
-# Selenium grid version2:
-
+# 2. docker-compose for the rescue
+## docker-compose.yml v2
 ```yml
 version: '2'
 
@@ -222,37 +220,40 @@ services:
         image: selenium/hub
         ports:
             - 4444:4444
-
     firefox:
         image: selenium/node-firefox
-        links:
-            - hub
+        environment:
+          - HUB_PORT_4444_TCP_ADDR=hub
+        expose:
+          - "5555"
     chrome:
         image: selenium/node-chrome
-        links:
-            - hub
+        environment:
+          - HUB_PORT_4444_TCP_ADDR=hub
+        expose:
+          - "5555"
 ```
-
+---
 ```bash
 $ docker-compose up -d
-docker-compose -f grid.yml up -d
+docker-compose up -d
 Creating helloworld_hub_1
 Creating helloworld_chrome_1
 Creating helloworld_firefox_1
 ```
 ---
+# 2. docker-compose for the rescue
+## Main difference between versions?
 
-# Main difference between versions?
-
-## syntax
+### syntax
 * all services are defined under service key
 * new volumes key
 
-## networking
+### networking
 * on v2 every container can communciate with each other
 * no linking necessary
 
-## Which are we going to use?
+### Which are we going to use?
 
 * Let's use v2, right!?
 
@@ -262,13 +263,10 @@ Creating helloworld_firefox_1
 * docker-compse v2 support in progress for rancher
 * planned for 1.2.0 milestone planned for October 2016
 * there's an [issue on github](https://github.com/rancher/rancher/issues/3973)
-
-So for rancher we currently need to use v1.
-
 .image-75[![rancher](img/rancher_issue.png)]
 
 ---
-# pittfalls
+# 3. pittfalls
 ### Extending docker-compose files
 * linked images are not extendable
 * hence: duplication necessary
@@ -278,7 +276,7 @@ So for rancher we currently need to use v1.
 * if images will not be refeteched
 * regulary `docker-compose pull`
 ---
-# Pittfalls
+# 3. pittfalls
 ### start vs up vs build
 * recreating image is not rebuilding input
 ** most often up is enough
@@ -298,9 +296,13 @@ Removing empty networks...
 Networks removed: 2
 ```
 ---
-# Live demo
+### Live demo
+
+Let's see it in action!
 ---
 # Thank you!
+
+Do you have any questions?
     </textarea>
     <script src="bower_components/remark/out/remark.min.js">
     </script>
