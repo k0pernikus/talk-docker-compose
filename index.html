@@ -192,9 +192,8 @@ ERROR:
 
 ```yml
 hub:
-    image: selenium/hub.image-50 img {
-  width: 50%;
-}
+    image: selenium/hub
+
 firefox:
     image: selenium/node-firefox
     links:
@@ -222,9 +221,8 @@ services:
     hub:
         image: selenium/hub
         ports:
-            - 4444:4444.image-50 img {
-  width: 50%;
-}
+            - 4444:4444
+
     firefox:
         image: selenium/node-firefox
         links:
@@ -303,7 +301,6 @@ Networks removed: 2
 # Live demo
 ---
 # Thank you!
-
     </textarea>
     <script src="bower_components/remark/out/remark.min.js">
     </script>
