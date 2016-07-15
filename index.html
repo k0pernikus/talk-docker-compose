@@ -59,8 +59,9 @@ Status: Downloaded newer image for selenium/hub:latest
 ## Let's install selenium grid using docker:
 
 ### Start the hub:
+```bash
 docker run -d -P --name selenium-hub selenium/hub
-
+```
 ### Link some nodes:
 ```bash
 docker run -d --link selenium-hub:hub selenium/node-firefox
@@ -278,8 +279,9 @@ Creating helloworld_firefox_1
 ---
 # 3. pittfalls
 ### start vs up vs build
-* recreating image is not rebuilding input
-** most often up is enough
+* starts only runs an exsting container
+* up may (re)create a container, yet only build once
+* build only builds the images
 ** sometimes build is necessary, hence if in doubt `docker-compose build`
 
 ### Disk space
